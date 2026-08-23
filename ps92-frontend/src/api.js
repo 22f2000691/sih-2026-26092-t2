@@ -17,7 +17,7 @@ import {
 /** Toggle this single flag to use live API instead of mock data */
 export const USE_MOCK = false;
 
-export const API_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = 'https://sih-ps92.onrender.com/';
 
 /**
  * POST /recommend — fetch loan scheme recommendations.
