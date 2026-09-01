@@ -7,6 +7,11 @@ EDUCATION_LOAN_LIMIT = 2000000.0
 
 
 def simulate_loan_terms(request: LoanApplicationRequest) -> FinancialSimulationResult:
+    loan_type = (request.loan_type or request.business_type or "General").strip()
+    if loan_type == "Education":
+        request.business_type = "Education"
+        request.education_status = "student"
+
     # Step 1: Income ceiling check for welfare-oriented concessional schemes
     if request.annual_income > INCOME_CEILING:
         return FinancialSimulationResult(

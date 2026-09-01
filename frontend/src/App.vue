@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 
 const demoTexts = [
@@ -9,19 +9,102 @@ const demoTexts = [
   'I am a college student and need 2 lakh for my engineering course. My family earns 300000 a year.'
 ]
 
+const tabs = [
+  { id: 'text', label: 'Text' },
+  { id: 'voice', label: 'Voice' },
+  { id: 'form', label: 'Form' }
+]
+
+const activeTab = ref('text')
 const inputText = ref(demoTexts[0])
 const results = ref(null)
 const isLoading = ref(false)
 const errorMessage = ref('')
+const isListening = ref(false)
+const recognition = ref(null)
 
-const useDemoInput = (text) => {
-  inputText.value = text
+const formData = ref({
+  amount: '3',
+  unit: 'lakh',
+  annualIncome: '300000',
+  loanType: 'General',
+  location: 'Assam'
+})
+
+const resetResultState = () => {
   results.value = null
   errorMessage.value = ''
 }
 
+const useDemoInput = (text) => {
+  activeTab.value = 'text'
+  inputText.value = text
+  resetResultState()
+}
+
+const buildFormText = () => {
+  const parsedAmount = Number(formData.value.amount) || 0
+  const amountText = `${parsedAmount} ${formData.value.unit}`
+  const loanType = formData.value.loanType || 'General'
+  const incomeText = `My annual income is ${formData.value.annualIncome || '300000'} rupees.`
+
+  if (loanType === 'Education') {
+    return `I need ${amountText} for my education loan. I am a student. ${incomeText}`
+  }
+
+  return `I need ${amountText} for my ${loanType.toLowerCase()} business. ${incomeText}`
+}
+
+const startVoiceCapture = () => {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+
+  if (!SpeechRecognition) {
+    errorMessage.value = 'Voice input is not supported in this browser. Please use text or form mode.'
+    return
+  }
+
+  if (recognition.value) {
+    recognition.value.stop()
+  }
+
+  const recognitionInstance = new SpeechRecognition()
+  recognitionInstance.lang = 'en-IN'
+  recognitionInstance.interimResults = false
+  recognitionInstance.maxAlternatives = 1
+
+  recognitionInstance.onstart = () => {
+    isListening.value = true
+    errorMessage.value = ''
+  }
+
+  recognitionInstance.onresult = (event) => {
+    const transcript = event.results[0][0].transcript
+    inputText.value = transcript
+    activeTab.value = 'voice'
+    resetResultState()
+  }
+
+  recognitionInstance.onerror = () => {
+    errorMessage.value = 'Voice capture failed. Please try again or switch to text mode.'
+  }
+
+  recognitionInstance.onend = () => {
+    isListening.value = false
+  }
+
+  recognition.value = recognitionInstance
+  recognitionInstance.start()
+}
+
+const stopVoiceCapture = () => {
+  recognition.value?.stop()
+  isListening.value = false
+}
+
 const submitApplication = async () => {
-  if (!inputText.value.trim()) {
+  const textToSubmit = activeTab.value === 'form' ? buildFormText() : inputText.value
+
+  if (!textToSubmit.trim() && activeTab.value !== 'form') {
     errorMessage.value = 'Please enter a project description first.'
     return
   }
@@ -30,12 +113,27 @@ const submitApplication = async () => {
   errorMessage.value = ''
 
   try {
-    const response = await axios.post('http://127.0.0.1:8000/voice-apply', {
-      translated_text: inputText.value,
-      latitude: 26.144,
-      longitude: 91.736
-    })
+    const payload = activeTab.value === 'form'
+      ? {
+          input_mode: 'form',
+          loan_type: formData.value.loanType,
+          capital_required: Number(formData.value.amount) * (
+            formData.value.unit === 'lakh' ? 100000 :
+            formData.value.unit === 'crore' ? 10000000 :
+            formData.value.unit === 'thousand' ? 1000 : 1
+          ),
+          annual_income: Number(formData.value.annualIncome) || 0,
+          latitude: 26.144,
+          longitude: 91.736
+        }
+      : {
+          input_mode: activeTab.value,
+          translated_text: textToSubmit,
+          latitude: 26.144,
+          longitude: 91.736
+        }
 
+    const response = await axios.post('http://127.0.0.1:8000/apply', payload)
     results.value = response.data
   } catch (error) {
     console.error('API Error:', error)
@@ -44,6 +142,10 @@ const submitApplication = async () => {
     isLoading.value = false
   }
 }
+
+onBeforeUnmount(() => {
+  stopVoiceCapture()
+})
 </script>
 
 <template>
@@ -52,18 +154,97 @@ const submitApplication = async () => {
       <header class="border-b border-slate-200 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-6 py-8 text-white">
         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">MoSJE • Health-Aware Routing</p>
         <h1 class="mt-3 text-3xl font-bold">Scheme Matchmaker</h1>
-        <p class="mt-2 text-sm text-blue-50">Voice-first vernacular eligibility and partner routing for marginalized entrepreneurs.</p>
+        <p class="mt-2 text-sm text-blue-50">Flexible input modes for vernacular loan discovery and partner routing.</p>
       </header>
 
       <main class="grid gap-6 p-6 lg:grid-cols-[1.05fr_1.4fr]">
         <section class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <label class="mb-2 block text-sm font-semibold text-slate-700">Describe your project</label>
-          <textarea
-            v-model="inputText"
-            rows="6"
-            class="w-full resize-none rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-            placeholder="I need 1.2 lakh rupees for a tailoring shop. My family earns 150000 a year."
-          ></textarea>
+          <div class="mb-4 flex gap-2 rounded-xl bg-slate-200 p-1">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              type="button"
+              class="flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition"
+              :class="activeTab === tab.id ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'"
+              @click="activeTab = tab.id"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+
+          <div class="mb-4 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
+            Choose the quickest input mode for your applicant profile.
+          </div>
+
+          <div v-if="activeTab === 'text'" class="space-y-3">
+            <label class="block text-sm font-semibold text-slate-700">Project description</label>
+            <textarea
+              v-model="inputText"
+              rows="6"
+              class="w-full resize-none rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              placeholder="I need 1.2 lakh rupees for a tailoring shop. My family earns 150000 a year."
+            ></textarea>
+          </div>
+
+          <div v-else-if="activeTab === 'voice'" class="space-y-4">
+            <label class="block text-sm font-semibold text-slate-700">Voice input</label>
+            <div class="rounded-xl border border-dashed border-slate-300 bg-white p-4">
+              <p class="text-sm text-slate-600">Click the mic and speak naturally. The transcript will populate here.</p>
+              <button
+                type="button"
+                @click="isListening ? stopVoiceCapture() : startVoiceCapture()"
+                class="mt-4 inline-flex items-center rounded-xl px-4 py-2 text-sm font-semibold transition"
+                :class="isListening ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
+              >
+                {{ isListening ? 'Stop listening' : 'Use microphone' }}
+              </button>
+            </div>
+
+            <textarea
+              v-model="inputText"
+              rows="5"
+              class="w-full resize-none rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              placeholder="Your spoken transcript appears here..."
+            ></textarea>
+          </div>
+
+          <div v-else class="space-y-4">
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Loan amount</label>
+                <input v-model="formData.amount" type="number" min="0" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-sm text-slate-700" />
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Unit</label>
+                <select v-model="formData.unit" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-sm text-slate-700">
+                  <option value="lakh">Lakh</option>
+                  <option value="crore">Crore</option>
+                  <option value="thousand">Thousand</option>
+                  <option value="rupees">Rupees</option>
+                </select>
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Annual income</label>
+                <input v-model="formData.annualIncome" type="number" min="0" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-sm text-slate-700" />
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Loan type</label>
+                <select v-model="formData.loanType" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-sm text-slate-700">
+                  <option value="General">General</option>
+                  <option value="Tailoring">Tailoring</option>
+                  <option value="Dairy">Dairy</option>
+                  <option value="Welding">Welding</option>
+                  <option value="Farming">Farming</option>
+                  <option value="Education">Education</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-slate-200 bg-white p-3">
+              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Generated prompt</p>
+              <p class="mt-2 text-sm text-slate-700">{{ buildFormText() }}</p>
+            </div>
+          </div>
 
           <div class="mt-4 flex flex-wrap gap-2">
             <button
@@ -94,8 +275,8 @@ const submitApplication = async () => {
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div v-if="!results" class="flex h-full min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
             <div>
-              <p class="text-lg font-semibold text-slate-700">Ready for demo</p>
-              <p class="mt-2 text-sm text-slate-500">Enter a project description and click the button to simulate eligibility and routing.</p>
+              <p class="text-lg font-semibold text-slate-700">Demo output</p>
+              <p class="mt-2 text-sm text-slate-500">Use text, voice, or form mode and submit to simulate eligibility and routing.</p>
             </div>
           </div>
 

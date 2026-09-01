@@ -3,11 +3,21 @@ from typing import List
 
 class LoanApplicationRequest(BaseModel):
     business_type: str = "General"
+    loan_type: str | None = None
     capital_required: float = 0.0
     annual_income: float = 0.0
     latitude: float = 0.0
     longitude: float = 0.0
     education_status: str | None = None
+
+class ApplyRequest(BaseModel):
+    input_mode: str = "text"
+    translated_text: str | None = None
+    loan_type: str | None = None
+    capital_required: float | None = None
+    annual_income: float | None = None
+    latitude: float = 0.0
+    longitude: float = 0.0
 
 class FinancialSimulationResult(BaseModel):
     is_eligible: bool

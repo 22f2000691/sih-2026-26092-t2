@@ -3,88 +3,167 @@ import re
 from schemas import LoanApplicationRequest
 
 
+EDUCATION_KEYWORDS = {
+    'education', 'student', 'college', 'school', 'course', 'study',
+    'tuition', 'degree', 'engineering', 'medical', 'university',
+    'higher education', 'admission', 'semester', 'exam'
+}
+
+BUSINESS_KEYWORDS = {
+    'tailor': 'Tailoring',
+    'tailoring': 'Tailoring',
+    'sewing': 'Tailoring',
+    'stitching': 'Tailoring',
+    'garment': 'Tailoring',
+    'dressmaker': 'Tailoring',
+    'farming': 'Farming',
+    'farmer': 'Farming',
+    'tractor': 'Farming',
+    'agriculture': 'Farming',
+    'cultivation': 'Farming',
+    'field': 'Farming',
+    'weld': 'Welding',
+    'welding': 'Welding',
+    'fabrication': 'Welding',
+    'metal': 'Welding',
+    'workshop': 'Welding',
+    'dairy': 'Dairy',
+    'milk': 'Dairy',
+    'cattle': 'Dairy',
+    'poultry': 'Dairy',
+    'cow': 'Dairy',
+    'buffalo': 'Dairy',
+    'shop': 'General',
+    'business': 'General',
+    'enterprise': 'General',
+}
+
+CAPITAL_HINTS = {
+    'need', 'need money', 'loan', 'borrow', 'require', 'requires', 'requirement',
+    'capital', 'amount', 'project', 'business', 'shop', 'startup'
+}
+
+INCOME_HINTS = {
+    'income', 'salary', 'earning', 'earns', 'earn', 'annual income',
+    'yearly income', 'family income', 'monthly income'
+}
+
+
 def _normalize_text(text: str) -> str:
     text = text.lower().strip()
     text = text.replace('₹', ' rupees ')
+    text = text.replace('rs.', ' rs ')
+    text = text.replace('rs', ' rs ')
     text = text.replace(',', '')
-    text = text.replace('lac', 'lakh')
-    text = text.replace('lacs', 'lakh')
-    text = text.replace('lakhs', 'lakh')
+    text = text.replace('lac', ' lakh ')
+    text = text.replace('lacs', ' lakh ')
+    text = text.replace('lakhs', ' lakh ')
+    text = text.replace('crores', ' crore ')
+    text = text.replace('cr.', ' crore ')
+    text = text.replace('cr', ' crore ')
     text = re.sub(r'\s+', ' ', text)
-    return text
+    return text.strip()
 
 
-def _extract_amount(text: str) -> float:
-    text = _normalize_text(text)
+def _tokenize(text: str):
+    normalized = _normalize_text(text)
+    return re.findall(r"\d+(?:\.\d+)?|[a-z]+|[\u0900-\u097f]+", normalized)
 
-    for pattern, multiplier in [
-        (r'(\d+(?:\.\d+)?)\s*(?:crore|cr)', 10000000),
-        (r'(\d+(?:\.\d+)?)\s*(?:lakh)', 100000),
-        (r'(\d+(?:\.\d+)?)\s*(?:rupees|rs|inr)', 1),
-        (r'(\d+(?:\.\d+)?)', 1),
-    ]:
+
+def _compound_amount_in_text(text: str) -> float:
+    patterns = [
+        (r'(\d+(?:\.\d+)?)\s*crore\s*(?:and\s+)?(\d+(?:\.\d+)?)\s*lakh', lambda a, b: float(a) * 10000000 + float(b) * 100000),
+        (r'(\d+(?:\.\d+)?)\s*lakh\s*(?:and\s+)?(\d+(?:\.\d+)?)\s*thousand', lambda a, b: float(a) * 100000 + float(b) * 1000),
+        (r'(\d+(?:\.\d+)?)\s*crore', lambda a: float(a) * 10000000),
+        (r'(\d+(?:\.\d+)?)\s*lakh', lambda a: float(a) * 100000),
+        (r'(\d+(?:\.\d+)?)\s*thousand', lambda a: float(a) * 1000),
+        (r'(\d+(?:\.\d+)?)\s*rupees', lambda a: float(a)),
+        (r'(\d+(?:\.\d+)?)', lambda a: float(a)),
+    ]
+
+    for pattern, converter in patterns:
         match = re.search(pattern, text)
         if match:
-            return float(match.group(1)) * multiplier
-
+            values = match.groups()
+            if len(values) == 2:
+                return converter(*values)
+            return converter(values[0])
     return 0.0
+
+
+def _extract_amount(text: str, context_hints=None) -> float:
+    text = _normalize_text(text)
+    tokens = _tokenize(text)
+
+    if not tokens:
+        return 0.0
+
+    if context_hints:
+        for hint in context_hints:
+            if hint in text:
+                return _compound_amount_in_text(text)
+
+    return _compound_amount_in_text(text)
+
+
+def _detect_business_type(text: str) -> str:
+    lowered = _normalize_text(text)
+    for keyword, value in BUSINESS_KEYWORDS.items():
+        if keyword in lowered:
+            return value
+    return 'General'
+
+
+def _detect_education_status(text: str):
+    lowered = _normalize_text(text)
+    for keyword in EDUCATION_KEYWORDS:
+        if keyword in lowered:
+            return 'student'
+    return None
+
+
+def _extract_capital(text: str) -> float:
+    lowered = _normalize_text(text)
+
+    context_pattern = r'(?:need|need money|borrow|loan|loan amount|require|requires|capital|project|amount|startup|business)\s*(?:of|for|is|around|about)?\s*(?:rupees\s+)?(\d+(?:\.\d+)?\s*(?:lakh|crore|thousand|rupees|rs)?)'
+    match = re.search(context_pattern, lowered)
+    if match:
+        return _compound_amount_in_text(match.group(0))
+
+    return _extract_amount(lowered, context_hints=CAPITAL_HINTS)
+
+
+def _extract_income(text: str) -> float:
+    lowered = _normalize_text(text)
+    income_pattern = r'(?:income|salary|earning|earns|annual income|yearly income|family income|monthly income)\s*(?:is|of|around|about)?\s*(?:rupees\s+)?(\d+(?:\.\d+)?\s*(?:lakh|crore|thousand|rupees|rs)?)'
+    match = re.search(income_pattern, lowered)
+    if match:
+        return _compound_amount_in_text(match.group(0))
+    return _extract_amount(lowered, context_hints=INCOME_HINTS)
 
 
 def parse_vernacular_intent(text: str, lat: float, lon: float) -> LoanApplicationRequest:
     """
-    Simulates the Bhashini/IndicTrans2 pipeline parsing an intent.
-    Handles Indian number format variations such as 30 lakh, 3 lac, 3000000, and rupee strings.
+    A token-first intent parser for Indian loan text and voice-transcript style input.
+    It keeps a lightweight, explainable extraction layer instead of a full ML pipeline,
+    while still handling forms like: 30 lakh, 3 lac, 2 crore, 3000000, and mixed phrases.
     """
-    text = _normalize_text(text)
+    cleaned = _normalize_text(text)
+    education_status = _detect_education_status(cleaned)
+    business_type = 'Education' if education_status else _detect_business_type(cleaned)
 
-    capital = 0.0
-    for pattern, multiplier in [
-        (r'(\d+(?:\.\d+)?)\s*(?:crore|cr)', 10000000),
-        (r'(\d+(?:\.\d+)?)\s*(?:lakh)', 100000),
-        (r'(\d+(?:\.\d+)?)\s*(?:rupees|rs|inr)', 1),
-        (r'(\d+(?:\.\d+)?)', 1),
-    ]:
-        match = re.search(pattern, text)
-        if match:
-            capital = float(match.group(1)) * multiplier
-            break
+    capital_required = _extract_capital(cleaned)
+    annual_income = _extract_income(cleaned)
 
-    income = 0.0
-    income_patterns = [
-        r'(?:family|annual|yearly|income|earns|earning|salary)\s*(?:is|of)?\s*(\d+(?:\.\d+)?)\s*(?:lakh|crore|cr|rupees|rs)?',
-        r'(?:earns|income is|income\s+of|family earns|earning\s+is)\s*(\d+(?:\.\d+)?)',
-    ]
-    for pattern in income_patterns:
-        match = re.search(pattern, text)
-        if match:
-            candidate = _extract_amount(match.group(0))
-            if candidate > 0:
-                income = candidate
-                break
-
-    education_status = None
-    if any(keyword in text for keyword in [
-        'education', 'student', 'college', 'school', 'course', 'study',
-        'tuition', 'higher education', 'degree', 'engineering', 'medical', 'university'
-    ]):
-        education_status = 'student'
-
-    business_type = 'General'
-    if education_status:
-        business_type = 'Education'
-    elif any(keyword in text for keyword in ['tailor', 'tailoring', 'sewing', 'stitching', 'garment', 'dressmaker']):
-        business_type = 'Tailoring'
-    elif any(keyword in text for keyword in ['farm', 'farmer', 'tractor', 'agriculture', 'cultivation', 'field']):
-        business_type = 'Farming'
-    elif any(keyword in text for keyword in ['weld', 'welding', 'fabrication', 'metal', 'workshop']):
-        business_type = 'Welding'
-    elif any(keyword in text for keyword in ['dairy', 'milk', 'cattle', 'poultry', 'cow', 'buffalo']):
-        business_type = 'Dairy'
+    if capital_required <= 0:
+        capital_required = 50000.0
+    if annual_income <= 0:
+        annual_income = 100000.0
 
     return LoanApplicationRequest(
         business_type=business_type,
-        capital_required=capital or 50000.0,
-        annual_income=income or 100000.0,
+        capital_required=capital_required,
+        annual_income=annual_income,
         latitude=lat,
         longitude=lon,
         education_status=education_status,
