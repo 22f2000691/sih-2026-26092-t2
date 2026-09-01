@@ -1,0 +1,215 @@
+SMART INDIA НАСКATHON INTERNAL HACKATHON
+Al-Driven Scheme Matching &
+Routing Engine for Marginalized Entrepreneurs
+Democratizing concessional credit through voice-first matching & health-aware channel finance routing.
+600 x 400
+PROBLEM STATEMENT ID
+26092
+TEAM NAME
+[ Your Registered Team Name ]
+ORGANIZATION / MINISTRY
+MoSJE (Dept. of Social Justice)
+TEAM LEADER
+[ Team Leader Full Name ]
+THEME & CATEGORY
+Smart Automation Software
+INSTITUTE
+IIT Madras BS Degree Programme
+IITM BS Degree Programme Presentation Template, Round 3 SIH Internal Hackathon Cover Slide
+SECTION 01
+Team Details
+MEMBER NAME ROLE/CONTRIBUTION
+Team Leader [Full Name ] System Architecture & Backend API Lead (FastAPI/ PostGIS)
+Member 2 [ Full Name ] Frontend PWA & UI/UX Design (Vue.js / Tailwind CSS)
+Member 3 [Full Name] Voice & NLP Pipeline (Bhashini Al / Hugging Face Intent Extraction)
+Member 4 [ Full Name 1
+Member 5 [Full Name ]
+Member 6 [ Full Name ]
+IITM BS Degree Programme SIH Internal Hackathon, Presentation Template
+Financial Simulation & Amortization Calculator Engine
+Geospatial Routing & Channel Partner Database (PostGIS)
+Document Verification (OCR/ DigiLocker Integration) & Testing
+600 x400
+Section 01 of 08
+SECTION 02
+Idea/ Approach/Proposed Solution
+600 x 400
+01
+The Problem
+Marginalized (SC) entrepreneurs eligible for
+concessional loans (6.5%-8% ROI, income ≤ ₹5.00L)
+cannot apply directly to the Ministry. They must
+navigate a 3-tier system of 100+ Channel Partners
+(SCAS, Banks, RRBs), resulting in severe scheme
+confusion, misrouted applications, and months
+wasted at branches choked by high NPAs or
+exhausted fund quotas.
+02
+Our Solution
+An intelligent, voice-first digital matchmaking platform
+that bridges the citizen-to-channel divide. It takes
+simple project parameters in local dialects,
+automatically maps the user to the right credit line
+(Microfinance vs. Term Loans), simulates subvention
+EMIs with 3-12 month moratoriums, and routes them
+to active, liquid partner branches.
+03
+What Makes It Different
+Unlike generic directory lookups, we employ HealthAware Geo-Routing that evaluates branch NPA ratios
+and unspent apex quotas to prevent pipeline deadends. Combined with multilingual Bhashini voice
+assistance and pre-underwritten digital dossiers, we
+eliminate intermediate agent dependency.
+IITM BS Degree Programme SIH Internal Hackathon, Presentation Template Section 02 of 08
+SECTION 03
+Novelty and Uniqueness
+EXISTING SOLUTIONS & LIMITATIONS
+myScheme Portal (Generic Aggregator)
+Acts as an informational catalog only; provides no direct channel partner linkage or
+live operational eligibility.
+WHAT'S GENUINELY NEW (OUR INNOVATIONS)
+Health-Aware Multi-Criteria Geo-Routing
+Routes by Proximity + Partner Health (NPA ratio < threshold) + Live Quota Liquidity,
+ensuring zero dead-end applications.
+JanSamarth Portal (Commercial Lending Focus)
+Tailored for standard commercial banks (MUDRA/PMEGP); fails to incorporate
+specialized SCA channel finance & SC subventions.
+Subvention-Specific Amortization Engine
+Calculates 90:10 loan-to-margin splits, subsidized interest rates (6.5%-8%), and
+custom 3-12 month moratorium grace periods.
+Fragmented State Portals & Offline Middlemen
+Static, text-heavy English/regional forms with zero visibility into branch liquidity;
+high agent fee exploitation.
+Voice-First Vernacular Intent Extraction
+Bhashini speech-to-text pipeline enables semi-literate rural artisans to speak
+naturally without knowing scheme acronyms.
+IITM BS Degree Programme SIH Internal Hackathon, Presentation Template
+600 x400
+Section 03 of 08
+SECTION 04
+Technical Approach & Architecture
+[INPUT]
+Voice / Form
+Bhashini ASR / PWA
+[PROCESS ]
+Intent & Filter
+NLP /Income ≤ ₹5L
+[LOGIC]
+Health Router
+PostGIS + NPA Score
+[OUTPUT ]
+Dossier & Route
+Pre-Qualified PDF/QR
+[USER/BRANCH]
+Disbursement
+Fast-Track Handoff
+600 x 400
+FRONTEND
+Vue 3 + Tailwind
+Lightweight mobile-first PWA with
+offline caching, high contrast UI, and
+Web Audio API integration.
+BACKEND
+FastAPI (Python)
+Asynchronous REST microservices
+executing subvention math,
+validation trees, and scoring
+pipelines.
+SPATIAL DATABASE
+PostgreSQL + PostGIS
+Stores 100+ partner coordinates with
+spatial indexing (GIST) for submillisecond radius matching.
+AI/VOICE STACK
+Bhashini + Transformers
+Dhruva ASR/ IndicTrans2 for voice
+translation; Hugging Face encoders
+for business category mapping.
+VERIFICATION & CLOUD
+DigiLocker / Docker
+Sandboxed identity/income
+verification; containerized
+deployment on cloud infrastructure.
+IITM BS Degree Programme SIH Internal Hackathon, Presentation Template Section 04 of 08
+SECTION 05
+Feasibility, Risks & Mitigation Strategy
+A POTENTIAL CHALLENGES & RISKS
+1. Vernacular Voice Accuracy & Dialects
+Rural background noise and regional accents may degrade automated Speech-to-Text
+extraction accuracу.
+CONCRETE MITIGATION STRATEGIES
+1. Hybrid Visual-Voice Fallback
+Extracted numerical figures are displayed on high-contrast visual slider cards for instant
+one-tap confirmation.
+600 x400
+2. Live Telemetry Gaps from State Agencies
+Certain rural SCAs may lack real-time API feeds for live fund utilization and branch-level
+overdue status.
+2. Nodal Officer Admin Portal & Batch Sync
+Provides a web-based MIS portal for district officers to batch-upload quarterly quotas, with
+confidence-decay scoring.
+3. Digital Literacy & Connectivity Divide
+Target marginalized beneficiaries in remote areas may face low smartphone ownership and
+weak 2G/3G data.
+3. Assisted-Mode (CSC/VLE Portal)
+Lightweight offline-capable PWA optimized for Village Level Entrepreneurs at Common
+Service Centres to assist applicants.
+IITM BS Degree Programme SIH Internal Hackathon, Presentation Template Section 05 of 08
+SECTION 09
+Impact and Benefits
+Social Impact
+Financial Inclusion: Brings first-time SC microentrepreneurs into the formal institutional credit fold.
+Dignity & Equity: Removes dependence on predatory
+local moneylenders and informal touts.
+Empowerment: Prioritizes women-led enterprises via
+schemes like Mahila Samriddhi Yojana.
+W
+Economic Impact
+Faster Disbursement: Cuts loan turnaround time by
+50% via pre-qualified application handoffs.
+Maximized Fund Utilization: Balances loan distribution
+across active channel partners, reducing idle apex
+funds.
+Low Interest Savings: Borrowers save 6%-10% interest
+compared to standard commercial credit.
+Operational & Efficiency
+100% Paperless Pre-Screening: Digital dossier
+generation saves thousands of physical forms and
+branch trips.
+Reduced NPA Formation: Healthy partner routing
+ensures funds are disbursed by capable, monitored
+branches.
+Scalable Architecture: Reusable across other welfare
+corporations (NSFDC, NBCFDC, NSKFDC).
+IITM BS Degree Programme SIH Internal Hackathon, Presentation Template
+600 x400
+Section 06 of 08
+SECTION 07
+Research and References
+1
+2
+National Scheduled Castes Finance & Development Corporation (NSFDC) (2024), Lending Policies, Concessional Rate Charts & Channel Finance Directories, MoSJE, Govt. of India.
+[https://nsfdc.nic.in]
+Department of Social Justice and Empowerment (MoSJE) (2023), Standing Committee Report on Credit Subvention & Welfare Fund Utilization. [https://socialjustice.gov.in]
+Reserve Bank of India (RBI) (2024), Master Directions on Priority Sector Lending (PSL) - Targets for Weaker Sections and SC/ST Beneficiaries. [https://rbi.org.in]
+Digital India Bhashini Division (Meity) (2023), Dhruva ASR & IndicTrans2 Technical Documentation for Indic Natural Language Processing. [https://bhashini.gov.in]
+5
+Open Geospatial Consortium (OGC) & PostGIS Project (2024), Spatial Indexing and Multi-Criteria Proximity Algorithms for Public Service Delivery. [https://postgis.net]
+IITM BS Degree Programme SIH Internal Hackathon, Presentation Template
+600 x400
+Section 07 of 08
+SECTION 08
+Solution Summary
+CRITERION SUMMARY
+Problem Marginalized SC entrepreneurs miss out on 6.5%-8% concessional loans because they cannot navigate complex scheme rules or identify which local
+partner branch actually has active lending funds.
+Proposed Solution A voice-first, multilingual platform that automatically matches applicants to the right concessional credit scheme, calculates exact subvention EMIs,
+routes them to the nearest healthy, unblocked lending partner.
+and
+Novelty/ USP Health-aware geo-routing evaluating branch NPA overdues and live fund quotas to prevent application dead-ends, combined with Bhashini vernacular
+voice guidance.
+Feasibility Built on a lightweight, proven stack (Vue.js PWA + FastAPI + PostGIS) with an assisted CSC mode and admin quota sync, requiring zero expensive GPU
+infrastructure.
+Impact Halves loan processing turnaround, eliminates predatory middleman exploitation, and optimizes government welfare capital utilization for over 100+
+Channel Partners.
+IITM BS Degree Programme SIH Internal Hackathon, Presentation Template
+600 x 400
+Section 08 of 08
