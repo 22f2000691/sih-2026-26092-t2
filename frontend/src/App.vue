@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onBeforeUnmount } from 'vue'
+import { ref, onBeforeUnmount, computed, watch } from 'vue'
 import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sih-2026-26092-t2.onrender.com'
@@ -32,6 +32,61 @@ const formData = ref({
   loanType: 'General',
   location: 'Assam'
 })
+
+const emiInputs = ref({
+  principal: 0,
+  rate: 7.5,
+  tenure: 36,
+  moratorium: 6
+})
+
+const emiSummary = computed(() => {
+  const principal = Number(emiInputs.value.principal) || 0
+  const annualRate = Number(emiInputs.value.rate) || 0
+  const tenure = Number(emiInputs.value.tenure) || 1
+  const moratorium = Number(emiInputs.value.moratorium) || 0
+
+  const monthlyRate = annualRate / 12 / 100
+  let emi = principal / tenure
+
+  if (monthlyRate > 0) {
+    const factor = Math.pow(1 + monthlyRate, tenure)
+    emi = (principal * monthlyRate * factor) / (factor - 1)
+  }
+
+  const totalPayable = emi * tenure
+  const totalInterest = totalPayable - principal
+
+  return {
+    principal,
+    annualRate,
+    tenure,
+    moratorium,
+    emi,
+    totalPayable,
+    totalInterest,
+    postMoratoriumNote: moratorium > 0 ? `Moratorium of ${moratorium} months before standard EMI starts.` : 'No moratorium applied.'
+  }
+})
+
+watch(
+  () => results.value,
+  (newResults) => {
+    if (!newResults?.simulation) return
+
+    const loanValue = Number(newResults.simulation.concessional_loan_amount || 0)
+    const rateValue = Number(newResults.simulation.interest_rate || 7.5)
+    const moratoriumValue = Number(newResults.simulation.moratorium_months || 6)
+
+    emiInputs.value = {
+      principal: loanValue,
+      rate: rateValue,
+      tenure: 36,
+      moratorium: moratoriumValue
+    }
+  },
+  { immediate: true }
+)
 
 const resetResultState = () => {
   results.value = null
@@ -312,6 +367,50 @@ onBeforeUnmount(() => {
               <div class="rounded-xl bg-slate-50 p-3">
                 <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Moratorium</p>
                 <p class="mt-1 text-lg font-bold text-slate-800">{{ results.simulation.moratorium_months }} months</p>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+              <h3 class="mb-3 text-lg font-semibold text-slate-800">Financial calculator</h3>
+
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Principal</label>
+                  <input v-model.number="emiInputs.principal" type="number" min="0" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-sm text-slate-700" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Rate %</label>
+                  <input v-model.number="emiInputs.rate" type="number" min="0" step="0.1" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-sm text-slate-700" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Tenure (months)</label>
+                  <input v-model.number="emiInputs.tenure" type="number" min="1" step="1" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-sm text-slate-700" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Moratorium (months)</label>
+                  <input v-model.number="emiInputs.moratorium" type="number" min="0" step="1" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-sm text-slate-700" />
+                </div>
+              </div>
+
+              <div class="mt-4 rounded-xl bg-white p-3">
+                <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Projected EMI</p>
+                <p class="mt-2 text-2xl font-bold text-slate-800">₹{{ emiSummary.emi.toFixed(0) }}</p>
+                <p class="mt-2 text-xs text-slate-600">{{ emiSummary.postMoratoriumNote }}</p>
+              </div>
+
+              <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-xl bg-white p-3">
+                  <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Total payable</p>
+                  <p class="mt-1 text-lg font-bold text-slate-800">₹{{ emiSummary.totalPayable.toFixed(0) }}</p>
+                </div>
+                <div class="rounded-xl bg-white p-3">
+                  <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Interest</p>
+                  <p class="mt-1 text-lg font-bold text-slate-800">₹{{ emiSummary.totalInterest.toFixed(0) }}</p>
+                </div>
+                <div class="rounded-xl bg-white p-3">
+                  <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Rate</p>
+                  <p class="mt-1 text-lg font-bold text-slate-800">{{ emiSummary.annualRate }}%</p>
+                </div>
               </div>
             </div>
 
