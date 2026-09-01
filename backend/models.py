@@ -1,6 +1,10 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean
 from geoalchemy2 import Geometry
-from database import Base
+
+try:
+    from database import Base
+except ModuleNotFoundError:
+    from .database import Base
 
 class ChannelPartner(Base):
     __tablename__ = "channel_partners"

@@ -2,6 +2,8 @@
 import { ref, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+
 const demoTexts = [
   'I need 1.2 lakh rupees for a tailoring shop. My family earns 150000 a year.',
   'I want 3 lakh for a small dairy business. My income is 280000 annually.',
@@ -133,11 +135,12 @@ const submitApplication = async () => {
           longitude: 91.736
         }
 
-    const response = await axios.post('http://127.0.0.1:8000/apply', payload)
+    const response = await axios.post(`${API_BASE_URL}/apply`, payload)
     results.value = response.data
   } catch (error) {
     console.error('API Error:', error)
-    errorMessage.value = 'The service is currently unavailable. Please try again in a moment.'
+    const serverMessage = error?.response?.data?.detail || error?.response?.data?.message || error?.message || 'Unknown server error'
+    errorMessage.value = `The service is currently unavailable. ${serverMessage}`
   } finally {
     isLoading.value = false
   }

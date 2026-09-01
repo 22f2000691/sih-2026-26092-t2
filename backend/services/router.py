@@ -1,8 +1,13 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from geoalchemy2.elements import WKTElement
-import models
-from schemas import LoanApplicationRequest
+
+try:
+    import models
+    from schemas import LoanApplicationRequest
+except ModuleNotFoundError:
+    from .. import models
+    from ..schemas import LoanApplicationRequest
 
 def find_optimal_partners(db: Session, request: LoanApplicationRequest, radius_km: float = 25.0):
     # Convert user lat/lon into a PostGIS Point (SRID 4326 for GPS coordinates)

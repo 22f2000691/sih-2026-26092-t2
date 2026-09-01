@@ -2,19 +2,28 @@ import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-import models
-from database import engine, get_db
-from schemas import LoanApplicationRequest, FinancialSimulationResult, FullApplicationResponse, RawVoiceRequest, ApplyRequest
-from services.simulator import simulate_loan_terms
-from services.router import find_optimal_partners
-from services.nlp import parse_vernacular_intent
 
-cors_origins = [
-    origin.strip() for origin in os.getenv(
-        "CORS_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173"
-    ).split(",") if origin.strip()
-]
+try:
+    import models
+    from database import engine, get_db
+    from schemas import LoanApplicationRequest, FinancialSimulationResult, FullApplicationResponse, RawVoiceRequest, ApplyRequest
+    from services.simulator import simulate_loan_terms
+    from services.router import find_optimal_partners
+    from services.nlp import parse_vernacular_intent
+    from cors_utils import normalize_cors_origins
+except ModuleNotFoundError:
+    from . import models
+    from .database import engine, get_db
+    from .schemas import LoanApplicationRequest, FinancialSimulationResult, FullApplicationResponse, RawVoiceRequest, ApplyRequest
+    from .services.simulator import simulate_loan_terms
+    from .services.router import find_optimal_partners
+    from .services.nlp import parse_vernacular_intent
+    from .cors_utils import normalize_cors_origins
+
+cors_origins = normalize_cors_origins(os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173"
+))
 
 # Create tables in the database
 models.Base.metadata.create_all(bind=engine)

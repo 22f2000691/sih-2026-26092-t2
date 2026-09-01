@@ -1,4 +1,7 @@
-from schemas import LoanApplicationRequest, FinancialSimulationResult
+try:
+    from schemas import LoanApplicationRequest, FinancialSimulationResult
+except ModuleNotFoundError:
+    from ..schemas import LoanApplicationRequest, FinancialSimulationResult
 
 INCOME_CEILING = 500000.0
 MICROFINANCE_LIMIT = 140000.0

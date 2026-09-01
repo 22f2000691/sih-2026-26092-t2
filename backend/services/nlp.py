@@ -1,6 +1,10 @@
 # backend/services/nlp.py
 import re
-from schemas import LoanApplicationRequest
+
+try:
+    from schemas import LoanApplicationRequest
+except ModuleNotFoundError:
+    from ..schemas import LoanApplicationRequest
 
 
 EDUCATION_KEYWORDS = {
