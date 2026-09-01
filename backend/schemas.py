@@ -2,11 +2,12 @@ from pydantic import BaseModel
 from typing import List
 
 class LoanApplicationRequest(BaseModel):
-    business_type: str
-    capital_required: float
-    annual_income: float
-    latitude: float
-    longitude: float
+    business_type: str = "General"
+    capital_required: float = 0.0
+    annual_income: float = 0.0
+    latitude: float = 0.0
+    longitude: float = 0.0
+    education_status: str | None = None
 
 class FinancialSimulationResult(BaseModel):
     is_eligible: bool
