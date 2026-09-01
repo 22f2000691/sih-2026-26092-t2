@@ -2,7 +2,7 @@
 import { ref, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sih-health-aware-router.onrender.com'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sih-2026-26092-t2.onrender.com'
 
 const demoTexts = [
   'I need 1.2 lakh rupees for a tailoring shop. My family earns 150000 a year.',
