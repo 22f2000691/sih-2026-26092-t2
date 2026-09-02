@@ -4,7 +4,7 @@ import axios from 'axios'
 import { ArrowUpRight, Calculator, CircleAlert, Languages, MapPin, Mic, RotateCcw, SlidersHorizontal, Volume2 } from 'lucide-vue-next'
 import { getStaticDemos, getStaticTexts } from './translations'
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://sih-ps92.onrender.com').replace(/\/+$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://sih-2026-26092-t2.onrender.com').replace(/\/+$/, '')
 const languages = [
   { code: 'en', label: 'English', native: 'English', voiceCode: 'en-IN' },
   { code: 'bn', label: 'Bengali', native: 'বাংলা', voiceCode: 'bn-IN' },
