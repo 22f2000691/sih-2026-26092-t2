@@ -256,44 +256,49 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-100 p-4 py-10 text-slate-800 sm:p-6">
-    <div class="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white shadow-xl">
-      <header class="border-b border-slate-200 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-6 py-8 text-white">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">MoSJE • Health-Aware Routing</p>
-          <label class="flex items-center gap-2 text-xs font-semibold text-blue-50">Language
-            <select v-model="language" class="rounded-lg border border-white/40 bg-white/15 px-2 py-1 text-slate-800">
-              <option value="en">English</option>
-              <option value="hi">हिन्दी</option>
-            </select>
-          </label>
+  <div class="min-h-screen bg-[#f4f6f5] text-slate-800">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:px-3 focus:py-2 focus:text-[#063970]">Skip to main content</a>
+    <div class="h-1 bg-gradient-to-r from-[#f28c28] from-0% via-[#f28c28] via-1/3 via-white via-1/3 via-white via-2/3 to-[#138808] to-2/3"></div>
+    <div class="border-b border-slate-300 bg-white px-4 py-2 text-xs text-slate-600 sm:px-6">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
+        <div><span class="font-semibold text-slate-800">Government of India</span><span class="mx-2 text-slate-400">|</span>Ministry of Social Justice &amp; Empowerment</div>
+        <div class="flex items-center gap-3"><span class="hidden sm:inline">Accessibility: A− <b>A</b> A+</span><label class="flex items-center gap-1.5 font-semibold text-slate-700">भाषा / Language
+          <select v-model="language" aria-label="Select input language" class="rounded border border-slate-300 bg-white px-2 py-1 text-slate-800 focus:border-[#063970] focus:outline-none">
+            <option value="en">English</option><option value="hi">हिन्दी</option>
+          </select>
+        </label></div>
+      </div>
+    </div>
+    <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <header class="border-t-4 border-[#f28c28] bg-[#063970] px-5 py-6 text-white shadow-sm sm:px-8">
+        <div class="flex items-start gap-4">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/10 text-center text-[10px] font-bold leading-3">भारत<br>GOV</div>
+          <div><p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#d9e9ff]">MoSJE • Channel Finance Facilitation</p><h1 class="mt-2 text-3xl font-bold tracking-tight">Scheme Matchmaker</h1><p class="mt-2 max-w-2xl text-sm leading-6 text-[#e7f0fb]">Find the right concessional scheme, understand repayments, and connect with an eligible channel partner.</p></div>
         </div>
-        <h1 class="mt-3 text-3xl font-bold">Scheme Matchmaker</h1>
-        <p class="mt-2 text-sm text-blue-50">Transparent scheme matching, repayment estimates, and eligible partner routing.</p>
       </header>
 
-      <main class="grid gap-6 p-6 lg:grid-cols-[1.05fr_1.4fr]">
-        <section class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <div class="mb-4 flex gap-2 rounded-xl bg-slate-200 p-1">
+      <main id="main-content" class="grid gap-6 border border-t-0 border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:grid-cols-[1.05fr_1.4fr]">
+        <section class="border border-slate-200 bg-[#fafcfb] p-5">
+          <div class="mb-4 flex gap-2 border-b border-slate-300">
             <button
               v-for="tab in tabs"
               :key="tab.id"
               type="button"
-              class="flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition"
-              :class="activeTab === tab.id ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'"
+              class="flex-1 border-b-2 px-3 py-2.5 text-sm font-semibold transition"
+              :class="activeTab === tab.id ? 'border-[#0b5cab] text-[#063970]' : 'border-transparent text-slate-600 hover:text-slate-800'"
               @click="activeTab = tab.id"
             >
               {{ tab.label }}
             </button>
           </div>
 
-          <div class="mb-4 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
-            Choose an input method. Results explain the match and only show partners that support the recommended scheme.
+          <div class="mb-4 border-l-4 border-[#f28c28] bg-[#fff8ed] px-3 py-2 text-xs text-[#70410a]">
+            Choose an input method. Results explain the match and only show partners that can process the recommended scheme.
           </div>
 
           <div class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600">
             <span>{{ userLocation.label }}</span>
-            <button type="button" @click="useCurrentLocation" :disabled="locating" class="shrink-0 rounded-lg border border-indigo-200 px-2 py-1 font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-60">
+            <button type="button" @click="useCurrentLocation" :disabled="locating" class="shrink-0 border border-[#0b5cab] px-2 py-1 font-semibold text-[#063970] hover:bg-blue-50 disabled:opacity-60">
               {{ locating ? 'Locating…' : 'Use my location' }}
             </button>
           </div>
@@ -385,7 +390,7 @@ onBeforeUnmount(() => {
             type="button"
             :disabled="isLoading"
             @click="submitApplication"
-            class="mt-5 w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
+            class="mt-5 w-full bg-[#0b5cab] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#063970] disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {{ isLoading ? 'Checking eligibility...' : 'Find Eligible Schemes' }}
           </button>
@@ -395,7 +400,7 @@ onBeforeUnmount(() => {
           </p>
         </section>
 
-        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section class="border border-slate-200 bg-white p-5 shadow-sm">
           <div v-if="!results" class="flex h-full min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
             <div>
               <p class="text-lg font-semibold text-slate-700">Demo output</p>
