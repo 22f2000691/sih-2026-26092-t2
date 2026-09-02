@@ -1,0 +1,9 @@
+{
+  "name": "Scheme Matchmaker",
+  "short_name": "Scheme Match",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
+  "description": "Concessional scheme discovery and channel-partner routing."
+}

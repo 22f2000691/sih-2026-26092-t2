@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
@@ -10,7 +10,9 @@ try:
     from services.simulator import simulate_loan_terms
     from services.router import find_optimal_partners
     from services.nlp import parse_vernacular_intent
-    from services.translation import SUPPORTED_TRANSLATION_LANGUAGES, translate_to_english, translate_dict
+    from services.bhashini import translate_to_english
+    from services.translation import translate_dict
+    from migrate import migrate
     from cors_utils import normalize_cors_origins
 except ModuleNotFoundError:
     from . import models
@@ -19,16 +21,19 @@ except ModuleNotFoundError:
     from .services.simulator import simulate_loan_terms
     from .services.router import find_optimal_partners
     from .services.nlp import parse_vernacular_intent
-    from .services.translation import SUPPORTED_TRANSLATION_LANGUAGES, translate_to_english, translate_dict
+    from .services.bhashini import translate_to_english
+    from .services.translation import translate_dict
+    from .migrate import migrate
     from .cors_utils import normalize_cors_origins
 
 cors_origins = normalize_cors_origins(os.getenv(
     "CORS_ORIGINS",
-    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175,https://sih-2026-26092-t2.vercel.app"
+    "http://localhost:5173,http://127.0.0.1:5173,https://sih-2026-26092-t2.vercel.app"
 ))
 
 # Create tables in the database
 models.Base.metadata.create_all(bind=engine)
+migrate()
 
 app = FastAPI(title="SIH Health-Aware Router API")
 
@@ -50,24 +55,16 @@ def get_partners_count(db: Session = Depends(get_db)):
     count = db.query(models.ChannelPartner).count()
     return {"total_registered_partners": count}
 
-
 @app.post("/translate", response_model=TranslationResponse)
 def batch_translate(request: TranslationRequest):
-    translated_texts = translate_dict(
-        texts=request.texts,
-        target_language=request.target_language,
-        source_language=request.source_language or "en"
-    )
     return TranslationResponse(
-        translations=translated_texts,
-        target_language=request.target_language
+        translations=translate_dict(request.texts, request.target_language, request.source_language),
+        target_language=request.target_language,
     )
-
 
 @app.get("/translate/languages")
 def get_translation_languages():
-    return {"languages": sorted(SUPPORTED_TRANSLATION_LANGUAGES)}
-
+    return {"languages": ["en", "bn", "hi", "mr", "ta", "te"]}
 
 
 @app.post("/simulate", response_model=FinancialSimulationResult)
@@ -100,17 +97,18 @@ def process_apply(request: ApplyRequest, db: Session = Depends(get_db)):
             latitude=request.latitude,
             longitude=request.longitude,
             education_status="student" if (request.loan_type or "").lower() == "education" else None,
+            preferred_language=request.preferred_language,
         )
     else:
-        try:
-            text_for_matching = translate_to_english(request.translated_text or "", request.language)
-        except RuntimeError as error:
-            raise HTTPException(status_code=503, detail=str(error)) from error
+        normalized_text, _provider = translate_to_english(
+            request.translated_text or "", request.preferred_language
+        )
         structured_data = parse_vernacular_intent(
-            text_for_matching,
+            normalized_text,
             request.latitude,
             request.longitude,
         )
+        structured_data.preferred_language = request.preferred_language
         if request.loan_type:
             structured_data.loan_type = request.loan_type
             structured_data.business_type = request.loan_type

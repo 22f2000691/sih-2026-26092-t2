@@ -14,6 +14,8 @@ class ChannelPartner(Base):
     partner_type = Column(String) # E.g., SCA, PSB, RRB
     npa_ratio = Column(Float, default=0.0)
     active_quota = Column(Float, default=0.0)
+    supported_schemes = Column(String, default="")
+    overdue_ratio = Column(Float, default=0.0)
     is_active = Column(Boolean, default=True)
     
     # Point geometry for geospatial routing (Longitude, Latitude)[cite: 1]

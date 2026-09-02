@@ -19,7 +19,16 @@ const shared = {
   }
 }
 
-export const getStaticTexts = (code, defaults) => ({ ...defaults, ...shared[code] })
+const locationText = {
+  en: { capacityAvailable: 'allocation available', directions: 'Open directions', mapTitle: 'Your location and nearby routing area' },
+  hi: { capacityAvailable: 'उपलब्ध आवंटन', directions: 'दिशा खोलें', mapTitle: 'आपका स्थान और आसपास का रूटिंग क्षेत्र' },
+  bn: { capacityAvailable: 'উপলব্ধ বরাদ্দ', directions: 'দিকনির্দেশ খুলুন', mapTitle: 'আপনার অবস্থান এবং কাছাকাছি রাউটিং এলাকা' },
+  te: { capacityAvailable: 'అందుబాటులో ఉన్న కేటాయింపు', directions: 'దిశలను తెరవండి', mapTitle: 'మీ స్థానం మరియు సమీప రూటింగ్ ప్రాంతం' },
+  mr: { capacityAvailable: 'उपलब्ध वाटप', directions: 'दिशानिर्देश उघडा', mapTitle: 'तुमचे स्थान आणि जवळचा मार्ग क्षेत्र' },
+  ta: { capacityAvailable: 'கிடைக்கும் ஒதுக்கீடு', directions: 'வழிகளைத் திறக்கவும்', mapTitle: 'உங்கள் இருப்பிடம் மற்றும் அருகிலுள்ள வழித்தடப் பகுதி' }
+}
+
+export const getStaticTexts = (code, defaults) => ({ ...defaults, ...shared[code], ...locationText[code] })
 
 const demoContent = {
   hi: [['दर्जी की दुकान · ₹1.2 लाख', 'मुझे दर्जी की दुकान के लिए 1.2 लाख रुपये चाहिए। मेरे परिवार की सालाना आय 150000 रुपये है।'], ['डेयरी फार्म · ₹3 लाख', 'मुझे छोटे डेयरी व्यवसाय के लिए 3 लाख रुपये चाहिए। मेरी सालाना आय 280000 रुपये है।'], ['वेल्डिंग कार्यशाला · ₹5 लाख', 'मुझे वेल्डिंग इकाई के लिए 5 लाख रुपये चाहिए और मेरी सालाना आय 450000 रुपये है।'], ['इंजीनियरिंग कॉलेज · ₹2 लाख', 'मैं छात्र हूं और इंजीनियरिंग पाठ्यक्रम के लिए 2 लाख रुपये चाहता हूं। मेरे परिवार की सालाना आय 300000 रुपये है।']],

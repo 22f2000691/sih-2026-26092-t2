@@ -95,6 +95,9 @@ const defaultTexts = {
   eyebrowGuidance: 'Application guidance',
   titlePartners: 'Nearby support partners',
   kmAway: 'km away',
+  capacityAvailable: 'allocation available',
+  directions: 'Open directions',
+  mapTitle: 'Your location and nearby routing area',
   healthy: 'Healthy',
   pending: 'Pending',
   emptyPartners: 'No partners are available for this result yet. You can still use the assessment above to prepare your application.',
@@ -110,6 +113,8 @@ const activeTab = ref('text')
 const selectedLanguage = ref(languages[0])
 const uiTexts = computed(() => getStaticTexts(selectedLanguage.value.code, defaultTexts))
 const demoTexts = computed(() => getStaticDemos(selectedLanguage.value.code, initialDemoTexts))
+const userLocation = ref({ latitude: 26.144, longitude: 91.736, label: 'Demo location: Guwahati, Assam' })
+const locating = ref(false)
 const greetings = {
   en: ['Good night.', 'Good morning.', 'Good afternoon.', 'Good evening.'],
   hi: ['शुभ रात्रि।', 'सुप्रभात।', 'नमस्कार।', 'शुभ संध्या।'],
@@ -143,6 +148,30 @@ watch(selectedLanguage, (language, previousLanguage) => {
 const formData = ref({ amount: '3', unit: 'lakh', annualIncome: '300000', loanType: 'General' })
 const emiInputs = ref({ principal: 0, rate: 7.5, tenure: 36, moratorium: 6 })
 const hasResults = computed(() => Boolean(results.value?.simulation))
+const mapUrl = computed(() => {
+  const { latitude, longitude } = userLocation.value
+  const delta = 0.08
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${longitude - delta}%2C${latitude - delta}%2C${longitude + delta}%2C${latitude + delta}&layer=mapnik&marker=${latitude}%2C${longitude}`
+})
+
+const useCurrentLocation = () => {
+  if (!navigator.geolocation) {
+    errorMessage.value = 'Location is not supported in this browser. You can continue with the demo location.'
+    return
+  }
+  locating.value = true
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {
+      userLocation.value = { latitude: Number(coords.latitude.toFixed(6)), longitude: Number(coords.longitude.toFixed(6)), label: 'Using your current location' }
+      locating.value = false
+    },
+    () => {
+      errorMessage.value = 'We could not access your location. The demo location is still selected.'
+      locating.value = false
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  )
+}
 
 const translateResult = async result => {
   if (!result || selectedLanguage.value.code === 'en') return
@@ -271,14 +300,14 @@ const submitApplication = async () => {
       loan_type: formData.value.loanType,
       capital_required: profileSummary.value.amount,
       annual_income: profileSummary.value.income,
-      latitude: 26.144,
-      longitude: 91.736,
+      latitude: userLocation.value.latitude,
+      longitude: userLocation.value.longitude,
       language: selectedLanguage.value.code
     } : {
       input_mode: activeTab.value,
       translated_text: text,
-      latitude: 26.144,
-      longitude: 91.736,
+      latitude: userLocation.value.latitude,
+      longitude: userLocation.value.longitude,
       language: selectedLanguage.value.code
     }
     const response = await axios.post(`${API_BASE_URL}/apply`, payload)
@@ -337,6 +366,10 @@ onBeforeUnmount(() => { stopVoiceCapture(); window.clearInterval(greetingTimer) 
       </section>
       <section class="dashboard-grid">
         <article class="input-panel">
+          <div class="location-control">
+            <span><MapPin :size="14" /> {{ userLocation.label }}</span>
+            <button type="button" @click="useCurrentLocation" :disabled="locating">{{ locating ? 'Locating...' : 'Use my location' }}</button>
+          </div>
           <div class="panel-heading">
             <div>
               <p class="eyebrow">{{ uiTexts.eyebrowSupport }}</p>
@@ -478,15 +511,20 @@ onBeforeUnmount(() => { stopVoiceCapture(); window.clearInterval(greetingTimer) 
                   <div class="partner-logo">{{ partner.name.slice(0, 1) }}</div>
                   <div>
                     <strong>{{ partner.name }}</strong>
-                    <p>{{ partner.type }} · {{ partner.distance_km }} {{ uiTexts.kmAway }}</p>
+                    <p>{{ partner.type }} · {{ partner.distance_km }} {{ uiTexts.kmAway }} · ₹{{ currency(partner.remaining_capacity, true) }} {{ uiTexts.capacityAvailable }}</p>
                   </div>
                   <span :class="partner.health_status === 'Healthy' ? 'healthy' : 'pending'">
                     {{ partner.health_status === 'Healthy' ? uiTexts.healthy : uiTexts.pending }}
                   </span>
+                  <a :href="`https://www.google.com/maps/dir/?api=1&destination=${partner.latitude},${partner.longitude}`" target="_blank" rel="noreferrer">{{ uiTexts.directions }}</a>
                 </div>
               </div>
               <p v-else class="empty-state">{{ uiTexts.emptyPartners }}</p>
             </article>
+          </div>
+          <div class="map-panel">
+            <div class="map-heading">{{ uiTexts.mapTitle }}</div>
+            <iframe :src="mapUrl" title="Applicant location map" loading="lazy"></iframe>
           </div>
         </template>
       </section>

@@ -1,8 +1,12 @@
-from database import Base, SessionLocal, engine
+from database import SessionLocal, Base, engine
 from models import ChannelPartner
+from migrate import migrate
 
 def seed_data():
+    # Render's build command seeds data directly, before the API process starts.
+    # Ensure both fresh and existing databases have the current table shape first.
     Base.metadata.create_all(bind=engine)
+    migrate()
     db = SessionLocal()
     
     # Clear existing data for a clean test environment
@@ -15,6 +19,8 @@ def seed_data():
             partner_type="RRB",
             npa_ratio=2.1,
             active_quota=5000000.0,
+            supported_schemes="Microfinance,Term Loan,Education Loan",
+            overdue_ratio=1.0,
             is_active=True,
             # Note: PostGIS expects Longitude first, then Latitude
             location="SRID=4326;POINT(91.7362 26.1445)" 
@@ -25,6 +31,8 @@ def seed_data():
             partner_type="PSB",
             npa_ratio=8.5, 
             active_quota=1000000.0,
+            supported_schemes="Microfinance,Term Loan",
+            overdue_ratio=6.0,
             is_active=True,
             location="SRID=4326;POINT(91.7923 26.1433)" # ~5 km distance
         ),
@@ -34,6 +42,8 @@ def seed_data():
             partner_type="SCA",
             npa_ratio=1.5,
             active_quota=4000000.0,
+            supported_schemes="Term Loan,Education Loan",
+            overdue_ratio=0.5,
             is_active=True,
             location="SRID=4326;POINT(91.6247 26.4358)" # ~35 km distance
         ),
@@ -43,6 +53,8 @@ def seed_data():
             partner_type="PSB",
             npa_ratio=4.0,
             active_quota=0.0,
+            supported_schemes="Microfinance,Term Loan",
+            overdue_ratio=0.0,
             is_active=False,
             location="SRID=4326;POINT(91.7455 26.1852)" # ~4 km distance
         )

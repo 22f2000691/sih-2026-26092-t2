@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 EDUCATION_KEYWORDS = {
     'education', 'student', 'college', 'school', 'course', 'study',
     'tuition', 'degree', 'engineering', 'medical', 'university',
-    'higher education', 'admission', 'semester', 'exam'
+    'higher education', 'admission', 'semester', 'exam', 'पढ़ाई', 'शिक्षा', 'कॉलेज', 'छात्र', 'स्टूडेंट'
 }
 
 BUSINESS_KEYWORDS = {
@@ -40,6 +40,15 @@ BUSINESS_KEYWORDS = {
     'shop': 'General',
     'business': 'General',
     'enterprise': 'General',
+    'सिलाई': 'Tailoring',
+    'दर्जी': 'Tailoring',
+    'खेती': 'Farming',
+    'कृषि': 'Farming',
+    'डेयरी': 'Dairy',
+    'दूध': 'Dairy',
+    'वेल्डिंग': 'Welding',
+    'दुकान': 'General',
+    'व्यवसाय': 'General',
 }
 
 CAPITAL_HINTS = {
@@ -55,9 +64,12 @@ INCOME_HINTS = {
 
 def _normalize_text(text: str) -> str:
     text = text.lower().strip()
+    text = text.translate(str.maketrans('०१२३४५६७८९', '0123456789'))
     text = text.replace('₹', ' rupees ')
-    text = text.replace('rs.', ' rs ')
-    text = text.replace('rs', ' rs ')
+    text = text.replace('लाख', ' lakh ')
+    text = text.replace('हजार', ' thousand ')
+    text = text.replace('रुपये', ' rupees ')
+    text = re.sub(r'\brs\.?\b', ' rupees ', text)
     text = text.replace(',', '')
     text = text.replace('lac', ' lakh ')
     text = text.replace('lacs', ' lakh ')
@@ -129,7 +141,7 @@ def _detect_education_status(text: str):
 def _extract_capital(text: str) -> float:
     lowered = _normalize_text(text)
 
-    context_pattern = r'(?:need|need money|borrow|loan|loan amount|require|requires|capital|project|amount|startup|business)\s*(?:of|for|is|around|about)?\s*(?:rupees\s+)?(\d+(?:\.\d+)?\s*(?:lakh|crore|thousand|rupees|rs)?)'
+    context_pattern = r'(?:need|need money|borrow|loan|loan amount|require|requires|capital|project|amount|startup|business|चाहिए|ऋण)\s*(?:of|for|is|around|about|का|के लिए)?\s*(?:rupees\s+)?(\d+(?:\.\d+)?\s*(?:lakh|crore|thousand|rupees|rs)?)'
     match = re.search(context_pattern, lowered)
     if match:
         return _compound_amount_in_text(match.group(0))
@@ -139,7 +151,7 @@ def _extract_capital(text: str) -> float:
 
 def _extract_income(text: str) -> float:
     lowered = _normalize_text(text)
-    income_pattern = r'(?:income|salary|earning|earns|annual income|yearly income|family income|monthly income)\s*(?:is|of|around|about)?\s*(?:rupees\s+)?(\d+(?:\.\d+)?\s*(?:lakh|crore|thousand|rupees|rs)?)'
+    income_pattern = r'(?:income|salary|earning|earns|annual income|yearly income|family income|monthly income|आय|कमाई)\s*(?:is|of|around|about|है)?\s*(?:rupees\s+)?(\d+(?:\.\d+)?\s*(?:lakh|crore|thousand|rupees|rs)?)'
     match = re.search(income_pattern, lowered)
     if match:
         return _compound_amount_in_text(match.group(0))
@@ -158,11 +170,6 @@ def parse_vernacular_intent(text: str, lat: float, lon: float) -> LoanApplicatio
 
     capital_required = _extract_capital(cleaned)
     annual_income = _extract_income(cleaned)
-
-    if capital_required <= 0:
-        capital_required = 50000.0
-    if annual_income <= 0:
-        annual_income = 100000.0
 
     return LoanApplicationRequest(
         business_type=business_type,
