@@ -1,7 +1,12 @@
-from database import SessionLocal
+from database import SessionLocal, Base, engine
 from models import ChannelPartner
+from migrate import migrate
 
 def seed_data():
+    # Render's build command seeds data directly, before the API process starts.
+    # Ensure both fresh and existing databases have the current table shape first.
+    Base.metadata.create_all(bind=engine)
+    migrate()
     db = SessionLocal()
     
     # Clear existing data for a clean test environment
