@@ -1,3 +1,20 @@
+# Python virtual environment
 venv/
+.venv/
 __pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Environment files
 .env
+.env.*
+
+# Project notes / generated text files
+problem.md
+ppt.txt
+*.txt
+
+# IDE / OS
+.vscode/
+.DS_Store
+*.log
