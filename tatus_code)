@@ -1,8 +1,0 @@
- id |                  name                  | partner_type | npa_ratio | active_quota | is_active 
-----+----------------------------------------+--------------+-----------+--------------+-----------
-  1 | Assam Gramin Vikash Bank - Main Branch | RRB          |       2.1 |      5000000 | t
-  2 | State Bank of India - Dispur           | PSB          |       8.5 |      1000000 | t
-  3 | Assam Cooperative Apex Bank - Rangia   | SCA          |       1.5 |      4000000 | t
-  4 | Punjab National Bank - Panbazar        | PSB          |         4 |            0 | f
-(4 rows)
-
