@@ -10,6 +10,7 @@ try:
     from services.simulator import simulate_loan_terms
     from services.router import find_optimal_partners
     from services.nlp import parse_vernacular_intent
+    from services.bhashini import translate_to_english
     from cors_utils import normalize_cors_origins
 except ModuleNotFoundError:
     from . import models
@@ -18,6 +19,7 @@ except ModuleNotFoundError:
     from .services.simulator import simulate_loan_terms
     from .services.router import find_optimal_partners
     from .services.nlp import parse_vernacular_intent
+    from .services.bhashini import translate_to_english
     from .cors_utils import normalize_cors_origins
 
 cors_origins = normalize_cors_origins(os.getenv(
@@ -78,13 +80,18 @@ def process_apply(request: ApplyRequest, db: Session = Depends(get_db)):
             latitude=request.latitude,
             longitude=request.longitude,
             education_status="student" if (request.loan_type or "").lower() == "education" else None,
+            preferred_language=request.preferred_language,
         )
     else:
+        normalized_text, _provider = translate_to_english(
+            request.translated_text or "", request.preferred_language
+        )
         structured_data = parse_vernacular_intent(
-            request.translated_text or "",
+            normalized_text,
             request.latitude,
             request.longitude,
         )
+        structured_data.preferred_language = request.preferred_language
         if request.loan_type:
             structured_data.loan_type = request.loan_type
             structured_data.business_type = request.loan_type
