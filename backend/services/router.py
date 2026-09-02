@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from geoalchemy2.shape import to_shape
 
 try:
     import models
@@ -21,7 +20,9 @@ def find_optimal_partners(db: Session, request: LoanApplicationRequest, radius_k
     # Query for active partners within the radius (in meters), ordered by health score then distance
     optimal_partners = db.query(
         models.ChannelPartner,
-        func.ST_DistanceSphere(models.ChannelPartner.location, func.ST_GeomFromText(user_point, 4326)).label("distance_meters")
+        func.ST_DistanceSphere(models.ChannelPartner.location, func.ST_GeomFromText(user_point, 4326)).label("distance_meters"),
+        func.ST_Y(models.ChannelPartner.location).label("latitude"),
+        func.ST_X(models.ChannelPartner.location).label("longitude"),
     ).filter(
         models.ChannelPartner.is_active == True,
         models.ChannelPartner.active_quota >= request.capital_required * 0.90,
@@ -40,8 +41,7 @@ def find_optimal_partners(db: Session, request: LoanApplicationRequest, radius_k
     
     # Format the results
     results = []
-    for partner, distance in optimal_partners:
-        point = to_shape(partner.location)
+    for partner, distance, latitude, longitude in optimal_partners:
         results.append({
             "partner_id": partner.id,
             "name": partner.name,
@@ -50,8 +50,8 @@ def find_optimal_partners(db: Session, request: LoanApplicationRequest, radius_k
             "health_status": "Healthy",
             "remaining_capacity": partner.active_quota,
             "supported_schemes": [item.strip() for item in partner.supported_schemes.split(",") if item.strip()],
-            "latitude": point.y,
-            "longitude": point.x,
+            "latitude": latitude,
+            "longitude": longitude,
         })
         
     return results
