@@ -1,0 +1,47 @@
+{
+    "status": "success",
+    "parsed_input": {
+      "income": 350000,
+      "amount_needed": 120000,
+      "category": "SC",
+      "purpose": "dairy business"
+    },
+    "recommendations": [
+      {
+        "scheme_id": "micro_finance",
+        "scheme_name": "Micro Finance Scheme",
+        "max_loan_amount": 125000,
+        "interest_rate": 6.5,
+        "repayment_years": 3,
+        "channel_type": "SCA/PSB/RRB",
+        "blurb": "This loan is perfect for starting your small business easily, offering low interest rates and a comfortable three-month break before repayments begin."
+      },
+      {
+        "scheme_id": "term_loan",
+        "scheme_name": "Term Loan Scheme",
+        "max_loan_amount": 4500000,
+        "interest_rate": 8,
+        "repayment_years": 7,
+        "channel_type": "SCA/PSB/RRB",
+        "blurb": "This scheme is great for expanding your business or farm, giving you large funding at low interest with seven comfortable years to pay back."
+      },
+      {
+        "scheme_id": "aajeevika_microfinance",
+        "scheme_name": "Aajeevika Microfinance Yojana (AMY)",
+        "max_loan_amount": 125000,
+        "interest_rate": 15,
+        "repayment_years": 3,
+        "channel_type": "NBFC-MFI",
+        "blurb": "This friendly loan gives SC entrepreneurs up to 1.25 lakh to start a small business, with a three-month break before repayments begin."
+      },
+      {
+        "scheme_id": "udyam_nidhi",
+        "scheme_name": "Udyam Nidhi Yojana (UNY)",
+        "max_loan_amount": 450000,
+        "interest_rate": 13,
+        "repayment_years": 5,
+        "channel_type": "Co-operative Society/Bank",
+        "blurb": "This scheme is wonderful for SC entrepreneurs as friendly local cooperative banks provide up to 4.5 lakh rupees with five flexible years to repay."
+      }
+    ]
+  }
